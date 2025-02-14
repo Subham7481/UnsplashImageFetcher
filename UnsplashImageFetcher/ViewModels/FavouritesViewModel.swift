@@ -31,7 +31,7 @@ class FavouritesViewModel: ObservableObject {
     func removeFromFavourites(_ image: ImageData) {
         if let index = favourites.firstIndex(where: { $0.id == image.id }) {
             favourites.remove(at: index)
-            saveFavorites()  
+            saveFavorites()
         }
     }
 }

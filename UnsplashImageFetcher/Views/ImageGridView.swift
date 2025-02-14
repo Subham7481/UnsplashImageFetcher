@@ -13,22 +13,30 @@ struct ImageGridView: View {
                         viewModel.searchImages(query: newQuery)
                     }
 
-              
-                ScrollView {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 10) {
-                        ForEach(viewModel.images) { image in
-                            ImageGridItem(image: image, viewModel: viewModel)
+                if viewModel.images.isEmpty {
+                    Text("No images found")
+                        .font(.headline)
+                        .foregroundColor(.gray)
+                        .padding()
+                } else {
+                    ScrollView {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 10) {
+                            ForEach(viewModel.images) { image in
+                                ImageGridItem(image: image, viewModel: viewModel)
+                            }
                         }
+                        .padding(.horizontal)
                     }
                 }
-                .onAppear {
-                    viewModel.fetchImages()
-                }
+            }
+            .onAppear {
+                viewModel.fetchImages()
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink(destination: FavouritesView()) {
                         Text("Favourites")
+                            .font(.system(size: 14, weight: .bold))
                     }
                 }
             }
@@ -56,7 +64,8 @@ struct ImageGridItem: View {
             Button(action: {
                 viewModel.addToFavourites(image)
             }, label: {
-                Text("Favourite")
+                Text("Add to Favourite")
+                    .font(.system(size: 16))
                     .foregroundColor(.blue)
             })
         }

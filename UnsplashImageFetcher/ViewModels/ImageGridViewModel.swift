@@ -1,21 +1,62 @@
 import Foundation
-class ImageGridViewModel: ObservableObject{
+
+class ImageGridViewModel: ObservableObject {
     @Published var images: [ImageData] = []
     @Published var allImages: [ImageData] = []
     @Published var searchQuery: String = ""
     @Published var favourites: [ImageData] = []
-    init(){
+
+    init() {
         loadFavourites()
+        // Mock data for testing
+        let mockImage = ImageData(
+            id: "1",
+            urls: ImageData.ImageURLs(
+                thumb: "https://via.placeholder.com/150",
+                regular: "https://via.placeholder.com/300"
+            ),
+            description: "Test Image"
+        )
+        self.images = [mockImage]
+        self.allImages = [mockImage]
     }
+
+
     func fetchImages() {
-        let url = URL(string: "https://api.unsplash.com/photos?client_id=NIsUoRsP2Re4Z6_Qrf1QV0ItnypAAZJ5Q21OWj8WHPI")!
-        URLSession.shared.dataTask(with: url) { data, _, _ in
-            guard let data = data else { return }
-            if let decoded = try? JSONDecoder().decode([ImageData].self, from: data) {
+        let urlString = "https://api.unsplash.com/photos?client_id=NIsUoRsP2Re4Z6_Qrf1QV0ItnypAAZJ5Q21OWj8WHPI"
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL")
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error fetching images: \(error.localizedDescription)")
+                return
+            }
+
+            if let response = response as? HTTPURLResponse, !(200...299).contains(response.statusCode) {
+                print("Invalid response: \(response.statusCode)")
+                return
+            }
+
+            guard let data = data else {
+                print("No data received.")
+                return
+            }
+
+            do {
+                // Debug: Print raw JSON
+                print("Raw JSON data: \(String(data: data, encoding: .utf8) ?? "No JSON")")
+                
+                let decoded = try JSONDecoder().decode([ImageData].self, from: data)
                 DispatchQueue.main.async {
                     self.images = decoded
                     self.allImages = decoded
+                    print("Images fetched: \(self.images.count)") // Debug count
                 }
+            } catch {
+                print("Error decoding JSON: \(error.localizedDescription)")
             }
         }.resume()
     }
